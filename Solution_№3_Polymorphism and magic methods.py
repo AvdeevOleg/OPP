@@ -1,3 +1,68 @@
+class Mentor:
+    def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
+        self.courses_attached = []
+
+    def __str__(self):
+        return f'Имя: {self.name}\nФамилия: {self.surname}'
+
+
+class Lecturer(Mentor):
+    def __init__(self, name, surname):
+        super().__init__(name, surname)
+        self.grades = {}
+
+    def rate_lecture(self, student, course, grade):
+        if isinstance(student, Student) and course in self.courses_attached and course in student.courses_in_progress:
+            if course in student.grades:
+                student.grades[course] += [grade]
+            else:
+                student.grades[course] = [grade]
+        else:
+            return 'Ошибка'
+
+    def __str__(self):
+        if not self.grades:
+            return super().__str__() + f'\nСредняя оценка за лекции: Нет оценок'
+        else:
+            average_grade = sum(sum(grades) / len(grades) for grades in self.grades.values()) / len(self.grades)
+            return super().__str__() + f'\nСредняя оценка за лекции: {average_grade:.1f}'
+
+    def __eq__(self, other):
+        return self.name == other.name and self.surname == other.surname
+
+    def __lt__(self, other):
+        return sum(sum(grades) / len(grades) for grades in self.grades.values()) < sum(
+            sum(grades) / len(grades) for grades in other.grades.values())
+
+    def __le__(self, other):
+        return self == other or self < other
+
+    def __gt__(self, other):
+        return not self <= other
+
+    def __ge__(self, other):
+        return not self < other
+
+    def __ne__(self, other):
+        return not self == other
+
+
+class Reviewer(Mentor):
+    def rate_hw(self, student, course, grade):
+        if isinstance(student, Student) and course in self.courses_attached and course in student.courses_in_progress:
+            if course in student.grades:
+                student.grades[course] += [grade]
+            else:
+                student.grades[course] = [grade]
+        else:
+            return 'Ошибка'
+
+    def __str__(self):
+        return super().__str__()
+
+
 class Student:
     def __init__(self, name, surname, gender):
         self.name = name
@@ -8,8 +73,7 @@ class Student:
         self.grades = {}
 
     def rate_lecture(self, lecturer, course, grade):
-        if isinstance(lecturer,
-                      Lecturer) and course in self.courses_in_progress and course in lecturer.courses_attached:
+        if isinstance(lecturer, Lecturer) and course in self.courses_in_progress and course in lecturer.courses_attached:
             if course in lecturer.grades:
                 lecturer.grades[course] += [grade]
             else:
@@ -18,8 +82,7 @@ class Student:
             return 'Ошибка'
 
     def rate_hw(self, reviewer, course, grade):
-        if isinstance(reviewer,
-                      Reviewer) and course in self.courses_in_progress and course in reviewer.courses_attached:
+        if isinstance(reviewer, Reviewer) and course in self.courses_in_progress and course in reviewer.courses_attached:
             if course in self.grades:
                 self.grades[course] += [grade]
             else:
@@ -37,61 +100,49 @@ class Student:
                f'Курсы в процессе изучения: {in_progress_courses}\n' \
                f'Завершенные курсы: {finished_courses}'
 
+    def __eq__(self, other):
+        return self.name == other.name and self.surname == other.surname
 
-class Mentor:
-    def __init__(self, name, surname):
-        self.name = name
-        self.surname = surname
-        self.courses_attached = []
+    def __lt__(self, other):
+        return sum(sum(grades) / len(grades) for grades in self.grades.values()) < sum(
+            sum(grades) / len(grades) for grades in other.grades.values())
 
-    def __str__(self):
-        return f'Имя: {self.name}\nФамилия: {self.surname}'
+    def __le__(self, other):
+        return self == other or self < other
 
+    def __gt__(self, other):
+        return not self <= other
 
-class Lecturer(Mentor):
-    def __init__(self, name, surname):
-        super().__init__(name, surname)
-        self.grades = {}
+    def __ge__(self, other):
+        return not self < other
 
-    def __str__(self):
-        if not self.grades:
-            return super().__str__() + f'\nСредняя оценка за лекции: Нет оценок'
-        else:
-            average_grade = sum(sum(grades) / len(grades) for grades in self.grades.values()) / len(self.grades)
-            return super().__str__() + f'\nСредняя оценка за лекции: {average_grade:.1f}'
+    def __ne__(self, other):
+        return not self == other
 
 
-class Reviewer(Mentor):
-    def rate_hw(self, student, course, grade):
-        if isinstance(student, Student) and course in self.courses_attached and course in student.courses_in_progress:
-            if course in student.grades:
-                student.grades[course] += [grade]
-            else:
-                student.grades[course] = [grade]
-        else:
-            return 'Ошибка'
+# Создаем объекты студента, рецензента и лектора
+some_reviewer = Reviewer('Another', 'Buddy')
+some_lecturer = Lecturer('Some', 'Buddy')
+some_student = Student('Ruoy', 'Eman', 'your_gender')
 
-    def __str__(self):
-        return super().__str__()
+# Оценки для студента и лектора
+some_reviewer.rate_hw(some_student, 'Python', 9)
+some_reviewer.rate_hw(some_student, 'Python', 10)
+some_lecturer.rate_lecture(some_student, 'Python', 9)
+some_lecturer.rate_lecture(some_student, 'Python', 10)
 
+# Добавим курсы студенту
+some_student.courses_in_progress += ['Python', 'Git']
+some_student.finished_courses += ['Введение в программирование']
 
-# Пример использования классов и их методов
-best_student = Student('Ruoy', 'Eman', 'your_gender')
-best_student.courses_in_progress += ['Python', 'Git']
-best_student.finished_courses += ['Введение в программирование']
-
-cool_lecturer = Lecturer('Some', 'Buddy')
-cool_lecturer.courses_attached += ['Python']
-
-cool_reviewer = Reviewer('Another', 'Buddy')
-cool_reviewer.courses_attached += ['Python']
-
-cool_reviewer.rate_hw(best_student, 'Python', 9)
-cool_reviewer.rate_hw(best_student, 'Python', 10)
-cool_reviewer.rate_hw(best_student, 'Git', 8)
-
-print(cool_reviewer)
+# Вывод информации о рецензенте
+print(some_reviewer)
 print()
-print(cool_lecturer)
+
+# Вывод информации о лекторе
+print(some_lecturer)
 print()
-print(best_student)
+
+# Вывод информации о студенте
+print(some_student)
+

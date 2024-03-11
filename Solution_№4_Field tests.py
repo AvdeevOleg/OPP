@@ -8,8 +8,7 @@ class Student:
         self.grades = {}
 
     def rate_lecture(self, lecturer, course, grade):
-        if isinstance(lecturer,
-                      Lecturer) and course in self.courses_in_progress and course in lecturer.courses_attached:
+        if isinstance(lecturer, Lecturer) and course in self.courses_in_progress and course in lecturer.courses_attached:
             if course in lecturer.grades:
                 lecturer.grades[course] += [grade]
             else:
@@ -18,8 +17,7 @@ class Student:
             return 'Ошибка'
 
     def rate_hw(self, reviewer, course, grade):
-        if isinstance(reviewer,
-                      Reviewer) and course in self.courses_in_progress and course in reviewer.courses_attached:
+        if isinstance(reviewer, Reviewer) and course in self.courses_in_progress and course in reviewer.courses_attached:
             if course in self.grades:
                 self.grades[course] += [grade]
             else:
@@ -28,14 +26,32 @@ class Student:
             return 'Ошибка'
 
     def __str__(self):
-        average_grade = sum(sum(grades) / len(grades) for grades in self.grades.values()) / len(
-            self.grades) if self.grades else 0
+        average_grade = sum(sum(grades) / len(grades) for grades in self.grades.values()) / len(self.grades) if self.grades else 0
         in_progress_courses = ', '.join(self.courses_in_progress)
         finished_courses = ', '.join(self.finished_courses)
         return f'Имя: {self.name}\nФамилия: {self.surname}\n' \
                f'Средняя оценка за домашние задания: {average_grade:.1f}\n' \
                f'Курсы в процессе изучения: {in_progress_courses}\n' \
                f'Завершенные курсы: {finished_courses}'
+
+    def __eq__(self, other):
+        return self.name == other.name and self.surname == other.surname
+
+    def __lt__(self, other):
+        return sum(sum(grades) / len(grades) for grades in self.grades.values()) < sum(
+            sum(grades) / len(grades) for grades in other.grades.values())
+
+    def __le__(self, other):
+        return self == other or self < other
+
+    def __gt__(self, other):
+        return not self <= other
+
+    def __ge__(self, other):
+        return not self < other
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class Mentor:
@@ -60,6 +76,25 @@ class Lecturer(Mentor):
             average_grade = sum(sum(grades) / len(grades) for grades in self.grades.values()) / len(self.grades)
             return super().__str__() + f'\nСредняя оценка за лекции: {average_grade:.1f}'
 
+    def __eq__(self, other):
+        return self.name == other.name and self.surname == other.surname
+
+    def __lt__(self, other):
+        return sum(sum(grades) / len(grades) for grades in self.grades.values()) < sum(
+            sum(grades) / len(grades) for grades in other.grades.values())
+
+    def __le__(self, other):
+        return self == other or self < other
+
+    def __gt__(self, other):
+        return not self <= other
+
+    def __ge__(self, other):
+        return not self < other
+
+    def __ne__(self, other):
+        return not self == other
+
 
 class Reviewer(Mentor):
     def rate_hw(self, student, course, grade):
@@ -74,70 +109,65 @@ class Reviewer(Mentor):
     def __str__(self):
         return super().__str__()
 
-
-# Функция для подсчета средней оценки за домашние задания по всем студентам в рамках конкретного курса
-def avg_hw_grade(students, course):
-    total_grades = 0
-    total_students = 0
+def avg_grade_for_course_students(students, course):
+    grades_sum = 0
+    students_count = 0
     for student in students:
         if course in student.grades:
-            total_grades += sum(student.grades[course])
-            total_students += len(student.grades[course])
-    return total_grades / total_students if total_students != 0 else 0
+            grades_sum += sum(student.grades[course])
+            students_count += len(student.grades[course])
+    return grades_sum / students_count if students_count > 0 else 0
 
-
-# Функция для подсчета средней оценки за лекции всех лекторов в рамках курса
-def avg_lecture_grade(lecturers, course):
-    total_grades = 0
-    total_lecturers = 0
+def avg_grade_for_course_lecturers(lecturers, course):
+    grades_sum = 0
+    lecturers_count = 0
     for lecturer in lecturers:
         if course in lecturer.grades:
-            total_grades += sum(lecturer.grades[course])
-            total_lecturers += 1
-    return total_grades / total_lecturers if total_lecturers != 0 else 0
+            grades_sum += sum(lecturer.grades[course])
+            lecturers_count += 1
+    return grades_sum / lecturers_count if lecturers_count > 0 else 0
 
+# Создаем объекты студента, рецензента и лектора
+some_reviewer1 = Reviewer('Another', 'Buddy')
+some_reviewer2 = Reviewer('John', 'Doe')
 
-# Создаем экземпляры классов
-student1 = Student('Ruoy', 'Eman', 'male')
-student2 = Student('Emma', 'Johnson', 'female')
+some_lecturer1 = Lecturer('Some', 'Buddy')
+some_lecturer2 = Lecturer('Jane', 'Doe')
 
-lecturer1 = Lecturer('John', 'Doe')
-lecturer2 = Lecturer('Alice', 'Smith')
+some_student1 = Student('Ruoy', 'Eman', 'your_gender')
+some_student2 = Student('Alice', 'Smith', 'female')
 
-reviewer1 = Reviewer('Bob', 'Brown')
-reviewer2 = Reviewer('Eva', 'Williams')
+# Оценки для студента и лектора
+some_reviewer1.rate_hw(some_student1, 'Python', 9)
+some_reviewer1.rate_hw(some_student1, 'Python', 10)
+some_reviewer2.rate_hw(some_student2, 'Python', 8)
+some_reviewer2.rate_hw(some_student2, 'Python', 7)
 
-# Добавляем курсы
-student1.courses_in_progress += ['Python', 'Git']
-student2.courses_in_progress += ['Python']
+# Добавим курсы студентам
+some_student1.courses_in_progress += ['Python', 'Git']
+some_student1.finished_courses += ['Введение в программирование']
+some_student2.courses_in_progress += ['Python', 'Git']
+some_student2.finished_courses += ['Введение в программирование']
 
-lecturer1.courses_attached += ['Python']
-lecturer2.courses_attached += ['Python']
+# Вывод информации о рецензенте
+print(some_reviewer1)
+print(some_reviewer2)
+print()
 
-reviewer1.courses_attached += ['Python']
-reviewer2.courses_attached += ['Python']
+# Вывод информации о лекторе
+print(some_lecturer1)
+print(some_lecturer2)
+print()
 
-# Выставляем оценки
-reviewer1.rate_hw(student1, 'Python', 8)
-reviewer1.rate_hw(student2, 'Python', 9)
-reviewer2.rate_hw(student1, 'Python', 7)
+# Вывод информации о студенте
+print(some_student1)
+print(some_student2)
+print()
 
-student1.rate_lecture(lecturer1, 'Python', 10)
-student2.rate_lecture(lecturer2, 'Python', 9)
+# Вызов функций для подсчета средней оценки за домашние задания по всем студентам в рамках конкретного курса
+course_name = 'Python'
+print(f'Средняя оценка за домашние задания по курсу "{course_name}": {avg_grade_for_course_students([some_student1, some_student2], course_name):.1f}')
 
-# Выводим информацию
-print("Студенты:")
-print(student1)
-print(student2)
-
-print("\nЛекторы:")
-print(lecturer1)
-print(lecturer2)
-
-print("\nПроверяющие:")
-print(reviewer1)
-print(reviewer2)
-
-# Вызываем функции для подсчета средних оценок
-print("\nСредняя оценка за домашние задания по курсу Python:", avg_hw_grade([student1, student2], 'Python'))
-print("Средняя оценка за лекции по курсу Python:", avg_lecture_grade([lecturer1, lecturer2], 'Python'))
+# Вызов функций для подсчета средней оценки за лекции всех лекторов в рамках курса
+course_name = 'Python'
+print(f'Средняя оценка за лекции по курсу "{course_name}": {avg_grade_for_course_lecturers([some_lecturer1, some_lecturer2], course_name):.1f}')

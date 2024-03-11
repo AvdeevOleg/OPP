@@ -8,9 +8,9 @@
 ## 2. [Solution_№2_Attributes and class interaction](<Solution_№2_Attributes and class interaction.py>)
 
 
-## 3. [Solution_№3_Polymorphism and magic methods](<Solution_№3_Polymorphism and magic methods.py>)
+## 3. [Solution_№3_Polymorphism and magic methods](<Solution_№3_Polymorphism and magic methods.py>) добавил реализацию магических методов сравнения (сравнение через операторы сравнения)
 
 
-## 4. [Solution_№4_Field tests](<Solution_№4_Field tests.py>)
+## 4. [Solution_№4_Field tests](<Solution_№4_Field tests.py>) продолжил код с учетом внесенных изменений в решение № 3 и добавил условия задания № 4
 
 
